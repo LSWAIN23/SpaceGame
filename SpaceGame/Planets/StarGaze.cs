@@ -8,10 +8,11 @@ namespace SpaceGame
         public PlanetName Name { get; set; }
         public Coordinate Coordinates { get; set; }
         public List<Item> ItemList { get; set; }
+        public List<Item> CargoList { get; set; }
 
         public string GetPlanetName()
         {
-            return nameof(Name);
+            return "Star Gaze";
         }
 
         public StarGaze()

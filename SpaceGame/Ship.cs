@@ -6,10 +6,11 @@ using System.Threading;
 using System.Threading.Tasks;
 using SpaceGame.Planets;
 
+
 namespace SpaceGame
 {
     public enum ShipUpgrade { NoobShip, Stargazer, Velociraptor };
-    
+
     public class Ship
     {
         public int CargoCapacity { get; set; }
@@ -19,18 +20,16 @@ namespace SpaceGame
         public int MaxWarpSpeed { get; set; }
         public int FuelUnits { get; set; }
         public double MaxLightYears { get; set; }
-
-        public Ship(IPlanet defaultPlanet)
-        {
-            CurrentPlanet = defaultPlanet;
-        }
-
-        public Ship(ShipUpgrade upgrade)
+        public List<Item> ItemsPurchased { get; set; }
+        public double TotalTimeTraveled { get; set; }
+        public List<Item> CargoList { get; set; }
+        public List<Item> ItemsSold { get; set; }
+        public Ship(IPlanet planet)
         {
             CargoCapacity = 10;
             CurrentWarpSpeed = 1;
-           // CurrentPlanet = defaultPlanet;d
-            Upgrade = upgrade;
+            CurrentPlanet = planet;
+            Upgrade = ShipUpgrade.NoobShip;
             MaxWarpSpeed = CalculateMaxWarpSpeed();
             FuelUnits = 10;
             MaxLightYears = CalculateMaxLightYears();
@@ -50,7 +49,7 @@ namespace SpaceGame
                     return 0;
             }
         }
-        
+
         public double CalculateMaxLightYears()
         {
             return FuelUnits * 10;
@@ -59,14 +58,38 @@ namespace SpaceGame
         public void SetWarpSpeed(int warpSpeed)
         {
             Console.WriteLine("At what warp speed would you like to travel?");
-            
+
         }
-        
+
         public void FlyTo(IPlanet planet)
         {
+            if (TotalTimeTraveled >= 40)
+            {
+                Console.WriteLine("If you travel here, you will lose the game. Travel anyway? (Y/N)");
+            }
+            int fuelExpended = TravelSystem.CalculateFuel();
+            if (fuelExpended >= FuelUnits)
+            {
+                Console.WriteLine("If you travel here, you will run out of fuel and lose the game. Travel anyway? (Y/N)");
+            }
+
             CurrentPlanet = planet;
             Console.WriteLine("Traveling...");
-            Console.WriteLine($"You have now arrived at: {CurrentPlanet}");
+            Console.WriteLine($"You have now arrived at: {CurrentPlanet.GetPlanetName()}");
+            FuelUnits -= fuelExpended;
+        }
+
+        public void AddItemPurchased(Item item)
+        {
+            ItemsPurchased.Add(item);
+            CargoCapacity -= item.CargoUnits;
+        }
+        public void DeleteItemSold(Item item)
+        {
+            ItemsSold.Remove(item);
+            CargoCapacity += item.CargoUnits;
         }
     }
 }
+
+  

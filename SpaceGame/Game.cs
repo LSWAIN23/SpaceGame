@@ -19,28 +19,12 @@ namespace SpaceGame
         public Game()
         {
             _yearsLeft = 40;
-            TotalMoney = 1000;
+            TotalMoney = 5000;
             TotalTimeTraveled = 0;
             Planets = GeneratePlanets();
-            GameShip = new Ship(ShipUpgrade.NoobShip);
-            Ship = GetPlanet(PlanetName.Earth);
+            GameShip = new Ship(GetPlanet(PlanetName.Earth));
         }
-
-        public IPlanet GetPlanet(PlanetName name)
-        {
-            if()
-            {
-                return Name;
-            }
-        }
-
-        private bool IsGameLost()
-        {
-            if (TotalMoney <= 0) return true;
-            if (TotalTimeTraveled >= _yearsLeft) return true;
-            return false;
-        }
-
+        
         private List<IPlanet> GeneratePlanets()
         {
             return new List<IPlanet>()
@@ -56,13 +40,49 @@ namespace SpaceGame
             };
         }
 
+        public IPlanet GetPlanet(PlanetName name)
+        {
+            foreach(IPlanet p in Planets)
+            {
+                if (p.Name == name)
+                {
+                    return p;
+                }
+            }
+            return null;
+        }
+
+        public IPlanet GetPlanet(string planetName)
+        {
+            foreach(IPlanet planet in Planets)
+            {
+                if (planet.GetPlanetName().ToUpper() == planetName.ToUpper())
+                    return planet;
+            }
+            return null;
+        }
+
+        private bool IsGameLost()
+        {
+            if (TotalMoney <= 0)
+            {
+                Console.WriteLine("\nYou have lost the game.");
+                return true;
+            }
+            if (TotalTimeTraveled >= _yearsLeft)
+            {
+                Console.WriteLine("\nYou have lost the game.");
+                return true;
+            }
+            return false;
+        }
+
         public void Start()
         {
             DisplayIntroMenu();
             while (!IsGameLost())
             {
                 ActionsMenu();
-                break;
             }
         }
 
@@ -149,9 +169,57 @@ namespace SpaceGame
             if (action == "BUY")
                 ShopMenu();
             else if (action == "SELL")
-                return; // SellMenu();
+                SellMenu();
             else if (action == "TRAVEL")
                 TravelMenu();
+        }
+
+        private void SellMenu()
+        {
+            string userSelection = "";
+            do
+            {
+                DisplaySellMenu();
+                userSelection = Console.ReadLine().Trim().ToUpper();
+            } while (!IsValidItem(userSelection));
+
+
+            Item itemSelected = GameShip.CurrentPlanet.CargoList.Where(x => x.Name.ToUpper() == userSelection.ToUpper()).FirstOrDefault();
+            TotalMoney -= itemSelected.SellValue;
+            Console.WriteLine($"\nYou've sold {itemSelected.Name}");
+            Console.WriteLine($"You now have {TotalMoney} left.\n");
+        }
+
+        public void DisplaySellMenu()
+        {
+            StringBuilder sell = new StringBuilder();
+            sell.AppendLine();
+            sell.AppendLine($"Welcome to {GameShip.CurrentPlanet.Name}\'s Cargo! Please select an item you would like to sell:\n");
+            sell.AppendLine(BuildSellMenu());
+            sell.Append("\nSelection: ");
+            Console.Write(sell.ToString());
+        }
+
+        private string BuildSellMenu()
+        {
+            StringBuilder sellMenu = new StringBuilder();
+            int itemNumber = 1;
+            sellMenu.AppendLine("+---------------------------------------------+");
+            sellMenu.AppendLine("\tName          Value          Weight(CargoUnits)");
+            sellMenu.AppendLine("+---------------------------------------------+");
+            foreach (Item item in GameShip.CurrentPlanet.CargoList)
+            {
+                sellMenu.Append(itemNumber + ".)\t");
+                sellMenu.Append(item.Name);
+                sellMenu.Append("          ");
+                sellMenu.Append(item.SellValue);
+                sellMenu.Append("          ");
+                sellMenu.Append(item.CargoUnits);
+                sellMenu.AppendLine();
+                --itemNumber;
+            }
+            sellMenu.AppendLine("+---------------------------------------------+");
+            return sellMenu.ToString();
         }
 
         private void ShopMenu()
@@ -162,6 +230,11 @@ namespace SpaceGame
                 DisplayShopMenu();
                 userSelection = Console.ReadLine().Trim().ToUpper();
             } while (!IsValidItem(userSelection));
+
+            Item itemSelected = GameShip.CurrentPlanet.ItemList.Where(x => x.Name.ToUpper() == userSelection.ToUpper()).FirstOrDefault();
+            TotalMoney -= itemSelected.Price;
+            Console.WriteLine($"\nYou've purchased {itemSelected.Name}");
+            Console.WriteLine($"You now have {TotalMoney} left.\n");
         }
 
         public void DisplayShopMenu()
@@ -200,7 +273,7 @@ namespace SpaceGame
         {
             foreach (Item item in GameShip.CurrentPlanet.ItemList)
             {
-                if (itemName.ToUpper() == item.Name)
+                if (itemName.ToUpper() == item.Name.ToUpper())
                     return true;
             }
 
@@ -210,12 +283,18 @@ namespace SpaceGame
 
         public void TravelMenu()
         {
+            string userSelection = "";
             do
             {
                 DisplayTravelMenu();
+                userSelection = Console.ReadLine();
             } while (!IsValidPlanet(userSelection));
-        }
 
+            GameShip.FlyTo(GetPlanet(userSelection));
+            double __yearsLeft = (_yearsLeft - TotalTimeTraveled);
+            Console.WriteLine(_yearsLeft);
+        }
+        
         private void DisplayTravelMenu()
         {
             Console.WriteLine(BuildTravelMenu());
@@ -239,36 +318,23 @@ namespace SpaceGame
             foreach(IPlanet planet in Planets)
             {
                 planetList.Append(menuNumber + ".) ");
-                planetList.AppendLine();
+                planetList.AppendLine(planet.GetPlanetName());
                 menuNumber++;
             }
 
             return planetList.ToString().TrimEnd();
         }
 
-        private bool IsValidPlanet(string PlanetName)
+        private bool IsValidPlanet(string planetName)
         {
-            foreach(IPlanet planet in Planets)
+            foreach(IPlanet p in Planets)
             {
-                if (PlanetName.ToUpper() == PlanetName)
+                if (planetName.ToUpper() == p.GetPlanetName().ToUpper())
                 {
                     return true;
                 }
             }
             return false;
         }
-
-        private IPlanet GetPlanet(string PlanetName)
-        {
-            foreach(IPlanet planet in Planets)
-            {
-                if(PlanetName.ToUpper() == PlanetName)
-                {
-                    return planet;
-                }
-            }
-            return null;
-        }
-
     }
 }

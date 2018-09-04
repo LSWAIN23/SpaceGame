@@ -20,8 +20,8 @@ namespace SpaceGame
 
         public double DistanceTo(Coordinate destination)
         {
-            int xDiff = this.x - destination.x;
-            int yDiff = this.y - destination.y;
+            double xDiff = this.x - destination.x;
+            double yDiff = this.y - destination.y;
             double distance = Math.Sqrt((xDiff * xDiff) + (yDiff * yDiff));
             return distance;
         }

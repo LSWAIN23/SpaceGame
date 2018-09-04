@@ -13,6 +13,7 @@ namespace SpaceGame.Planets
         PlanetName Name { get; set; }
         Coordinate Coordinates { get; set; }
         List<Item> ItemList { get; set; }
+        List<Item> CargoList { get; set; }
         List<Item> GenerateItems();
         string GetPlanetName();
     }
